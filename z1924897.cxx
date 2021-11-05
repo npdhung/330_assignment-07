@@ -1,7 +1,7 @@
 /*
  *  Hung Nguyen
  *  Z1924897
- *  CSCI330 - 000
+ *  CSCI330 - 002
  *
  *  Assignment 7
  *
@@ -48,9 +48,25 @@ int main(int argc, char* argv[]) {
         cout << "Permission denied." << endl;
         exit(EXIT_FAILURE);
     }
-
+    
     int readStatus;
     struct stat statBuffer;
+    // call stat system call
+    readStatus = stat(fileName, &statBuffer);
+    // check if a file is exist, if not create a new one
+    int fileDescriptor = 0;
+    bool newFileOption = false;
+    int rs;
+    if (readStatus != 0) {
+        fileDescriptor = creat(fileName,O_WRONLY);
+        newFileOption = true;
+        rs = chmod(fileName, 00000);
+        if (rs == -1) {
+            perror(fileName);
+            exit(EXIT_FAILURE);
+        }
+    }
+    
     // call stat system call
     readStatus = stat(fileName, &statBuffer);
     if (readStatus == -1) {
@@ -83,7 +99,6 @@ int main(int argc, char* argv[]) {
     }
     
     //change permission to allow user to write to file
-    int rs;
     rs = chmod(fileName, 00200);
     if (rs == -1) {
         perror(fileName);
@@ -91,13 +106,14 @@ int main(int argc, char* argv[]) {
     }
     readStatus = stat(fileName, &statBuffer);
     
-    int fileDescriptor;
     ssize_t count;
     
     // If there is -c option, the program will overwrite content
     // if not, it will append to the exist content
-    if (cOption) fileDescriptor = open(fileName, O_WRONLY | O_TRUNC);
-    else fileDescriptor = open(fileName, O_WRONLY | O_APPEND);
+    if (!newFileOption) {
+        if (cOption) fileDescriptor = open(fileName, O_WRONLY | O_TRUNC);
+        else fileDescriptor = open(fileName, O_WRONLY | O_APPEND);
+    }
     if (fileDescriptor == -1) {
         perror(fileName);
         exit(EXIT_FAILURE);
