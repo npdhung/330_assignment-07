@@ -44,6 +44,7 @@ int main(int argc, char* argv[]) {
     int readDir;
     struct stat statDir;
     readDir = stat(".", &statDir);
+    (void)readDir;
     if (!(S_IWUSR & statDir.st_mode)) {
         cout << "Permission denied." << endl;
         exit(EXIT_FAILURE);
